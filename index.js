@@ -4,6 +4,11 @@ export default class extends Phaser.Sprite{
     constructor(opts) {
         super(opts.game, opts.x || 0, opts.y || 0, opts.key || '', opts.frame || '')
 
+        // apply post creation callback if provided
+        if (opts.setAnimations && typeof opts.setAnimations === "function") {
+            opts.setAnimations(this);
+        }
+
         // Save options
         this.opts = opts
 
@@ -36,6 +41,10 @@ export default class extends Phaser.Sprite{
         this.currentJump = 0
         this.onJump = opts.hasOwnProperty('onJump') ? opts.onJump : null
 
+        // set up inertia
+        this.inertia = opts.inertia || 0
+        this.xvelclamp = 0.001
+
         // Set up controls
         if (opts.hasOwnProperty('controls') && opts.controls) {
 
@@ -63,6 +72,8 @@ export default class extends Phaser.Sprite{
             }
 
             this.currentJump++;
+
+            // this.animations.play('jump', 20, true);
         }
     }
 
@@ -82,6 +93,10 @@ export default class extends Phaser.Sprite{
         if (this.body.onFloor()) {
             this.currentJump = 0
         }
+        else {
+            // always be in jump animation if we're not on the floor
+            this.animations.play('jump', 20, true);
+        }
 
         if (this.opts.hasOwnProperty('controls') && this.opts.controls) {
             // horizontal movement
@@ -98,6 +113,19 @@ export default class extends Phaser.Sprite{
                 this.body.velocity.x = this.xSpeed
                 this.facing = 1
                 this.scale.x = 1
+
+                if (this.body.onFloor()) {
+                    this.animations.play('left', 10, true);
+                }
+            }
+            else {
+                if (this.inertia === 0) {
+                    this.body.velocity.x = 0
+                }
+
+                if (this.body.onFloor()) {
+                    this.animations.play('wait', 10, true);
+                }
             }
         }
     }
