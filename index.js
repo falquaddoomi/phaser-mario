@@ -34,6 +34,7 @@ export default class extends Phaser.Sprite{
         this.jumpForce = opts.jump || -250
         this.totalJumps = opts.hasOwnProperty('jumps') ? opts.jumps : 1
         this.currentJump = 0
+        this.onJump = opts.hasOwnProperty('onJump') ? opts.onJump : null
 
         // Set up controls
         if( opts.hasOwnProperty('controls') && opts.controls ){
@@ -52,9 +53,14 @@ export default class extends Phaser.Sprite{
     }
 
     jump(){
-        if( this.currentJump < this.totalJumps ){
+        if ( this.currentJump < this.totalJumps ){
             this.body.velocity.y = this.jumpForce
-            this.currentJump++
+
+            if (this.onJump) {
+                this.onJump(this, this.currentJump);
+            }
+
+            this.currentJump++;
         }
     }
 
